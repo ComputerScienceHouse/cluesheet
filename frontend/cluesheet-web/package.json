@@ -11,7 +11,9 @@
   "dependencies": {
     "@axa-fr/react-oidc": "^7.25.12",
     "csh-material-bootstrap": "^4.6.2",
+    "msw": "^2.7.5",
     "next": "15.3.1",
+    "playwright-msw": "^3.0.1",
     "powerhooks": "^2.0.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
