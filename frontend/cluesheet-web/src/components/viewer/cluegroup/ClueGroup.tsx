@@ -11,11 +11,11 @@ export default function ClueGroup({ clue }: ClueGroupProps) {
   return (
     <>
       <div className={styles.clueBody}>
-        <LineItem clue={clue}/>
+        <LineItem clue={clue} />
         <div className={styles.children}>
           {clue.children.length > 0 &&
             clue.children.map((clue: Clue, index) => (
-              <ClueGroup key={`${clue.id}-${index}`} clue={clue} />
+              <ClueGroup key={`${clue.id}`} clue={clue} />
             ))}
         </div>
       </div>

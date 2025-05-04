@@ -12,7 +12,7 @@ export default function LineItem({ clue }: LineItemProps) {
 
   // Handle checkbox change
   const handleClueChecked = () => {
-    setIsChecked(prevChecked => !prevChecked);
+    setIsChecked((prevChecked) => !prevChecked);
     // You can also perform any additional logic here, like updating the clue state
   };
 

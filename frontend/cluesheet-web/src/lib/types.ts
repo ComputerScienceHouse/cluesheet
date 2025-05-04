@@ -1,8 +1,14 @@
 export type Clue = {
   id: string;
-  limit: number;
-  completions: number;
+  completions: number; // Number of times this has been completed
   description: string;
   points: string;
+  rule: Rule | null;
+  tags: Array<string>;
   children: Array<Clue>;
+};
+
+export type Rule = {
+  key: string;
+  description: string;
 };
