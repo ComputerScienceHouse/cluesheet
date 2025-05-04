@@ -21,4 +21,4 @@ export default function PointCounter({ points }: PointCounterProps) {
       />
     </div>
   );
-};
+}

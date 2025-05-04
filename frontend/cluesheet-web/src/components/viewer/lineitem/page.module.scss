@@ -1,0 +1,39 @@
+.lineItem {
+  display: flex;
+  flex-direction: row;
+}
+
+/* Hide the default checkbox */
+.customCheckboxInput {
+    display: none;
+}
+
+/* Create a custom checkbox */
+.customCheckboxInput {
+    width: 24px; /* Size of the checkbox */
+    height: 24px; /* Size of the checkbox */
+    border: 2px solid #ccc; /* Border color */
+    display: inline-block;
+    position: relative;
+    cursor: pointer;
+}
+
+
+/* Add a checkmark */
+.customCheckboxInput::after {
+    content: '';
+    position: absolute;
+    left: 6px; /* Position of the checkmark */
+    top: 2px; /* Position of the checkmark */
+    width: 6px; /* Width of the checkmark */
+    height: 12px; /* Height of the checkmark */
+    border: solid white; /* Checkmark color */
+    border-width: 0 2px 2px 0; /* Checkmark shape */
+    transform: rotate(45deg);
+    opacity: 0; /* Initially hidden */
+}
+
+/* Show the checkmark when checked */
+.customCheckboxInput:checked + .customCheckbox::after {
+    opacity: 1; /* Show checkmark */
+}
