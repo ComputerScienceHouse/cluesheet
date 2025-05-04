@@ -1,11 +1,4 @@
 import { http, HttpResponse } from "msw";
-import { chomSt, chomStreet, expectedAPIRequestData } from "../util";
-import { isDeepStrictEqual } from "util";
-import {
-  JoinFormResponse,
-  JoinFormValues,
-} from "@/components/JoinForm/JoinForm";
-import { NNAssignRequestValues } from "@/components/NNAssignForm/NNAssignForm";
 import { mockCluesheetUUID } from "../lib/data";
 
 export default [
@@ -14,6 +7,7 @@ export default [
     // OK we're chilling. Return 200
     return HttpResponse.json({ detail: "CSH" }, { status: 201 });
   }),
+  /*
   http.post("/api/v1/nn-assign/", async ({ request }) => {
     console.debug("Hello from mocked NN Assign API.");
 
@@ -24,4 +18,5 @@ export default [
       { status: 200 },
     );
   }),
+  */
 ];

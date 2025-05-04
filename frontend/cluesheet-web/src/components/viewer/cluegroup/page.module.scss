@@ -1,0 +1,23 @@
+.clueBody {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  margin: 10px;
+
+  border: 1px solid #ccc; /* Optional border */
+  padding: 20px; /* Optional padding */
+  border-radius: 8px; /* Optional rounded corners */
+}
+
+.lineItem {
+  display: flex;
+  flex-direction: row;
+}
+
+.lineItem input[type="checkbox"] {
+  margin: 10px;
+}
+
+.children {
+  margin-left: 50px;
+}
