@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/gorilla/mux"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/google/uuid"
@@ -62,6 +64,38 @@ func main() {
 		}
 		fmt.Printf("%v, %v\n", id, creation)
 	}
+
+	v1 := router.PathPrefix("/api/v1/").Subrouter()
+	v1.Path("/cluesheet/{id}").Methods("GET").HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		vars := mux.Vars(r)
+		id, err := uuid.Parse(vars["id"])
+		if err != nil {
+			http.Error(rw, fmt.Sprintf("failed to parse uuid '%s': '%s'", vars["id"], err), 400)
+			return
+		}
+
+		rows, err := conn.Query(r.Context(), `select id, name, origin_id, created_by, created_at, edited_by, edited_at, visibility, owners, groups from cluesheet where id = $1`, id)
+		if err != nil {
+			http.Error(rw, fmt.Sprintf("failed getting cluesheet '%s': '%s'", vars["id"], err), 500)
+			return
+		}
+
+		cluesheet, err := pgx.CollectRows(rows, pgx.RowToStructByName[Cluesheet])
+		if err != nil {
+			http.Error(rw, fmt.Sprintf("failed getting cluesheet '%s': '%s'", vars["id"], err), 500)
+			return
+		}
+
+		data, err := json.Marshal(cluesheet)
+		if err != nil {
+			http.Error(rw, fmt.Sprintf("failed marshalling cluesheet '%s': '%s'", vars["id"], err), 500)
+			return
+		}
+		rw.Header().Set("Content-Type", "application/json")
+		rw.Write(data)
+	})
 
 	srv := &http.Server{
 		Addr:    ":8080",

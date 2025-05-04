@@ -4,7 +4,7 @@
 2. In the root directory of the repo, run `podman compose up -d`
 3. Obtain [golang migrate](https://github.com/golang-migrate/migrate). You may need to download the CLI directly from a release
 4. In `backend`, run `migrate -source file://$(pwd)/migrations -database postgres://postgres:test@localhost:5432/postgres?sslmode=disable up`
-5. In `backend`, run `go run main.go`
+5. In `backend`, run `go run .`
 
 ### Adding new dependencies
 `go mod tidy`
