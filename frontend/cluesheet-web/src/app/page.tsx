@@ -7,8 +7,7 @@ export default function Home() {
       <main className={styles.main}>
         <p>Welcome to willard's world</p>
       </main>
-      <footer className={styles.footer}>
-      </footer>
+      <footer className={styles.footer}></footer>
     </div>
   );
 }

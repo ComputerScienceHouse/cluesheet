@@ -1,6 +1,6 @@
 // if your app requires SSO you can delete this page
 import UserInfo from "./UserInfo";
-import {useOidc, useOidcAccessToken} from "@axa-fr/react-oidc";
+import { useOidc, useOidcAccessToken } from "@axa-fr/react-oidc";
 import { SSOEnabled } from "./Configuration";
 
 export const useOidcNoSSO = () => {
@@ -13,7 +13,7 @@ export const useOidcNoSSO = () => {
 };
 
 export const useOidcAccessTokenNoSSO = () => {
-  return {accessTokenPayload: ""};
+  return { accessTokenPayload: "" };
 };
 
 export const NoSSOUserInfo: UserInfo = {

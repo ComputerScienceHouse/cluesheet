@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React from "react";
 import {
   Collapse,
@@ -8,11 +8,11 @@ import {
   NavbarToggler,
   NavItem,
 } from "reactstrap";
-import {NavLink} from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import Profile from "./Profile";
 
 import UserInfo from "@/lib/UserInfo";
-import {SSOEnabled} from "@/lib/Configuration";
+import { SSOEnabled } from "@/lib/Configuration";
 import {
   getUseOidcAccessToken,
   NoSSOUserInfo,
@@ -24,52 +24,89 @@ const NavBar: React.FunctionComponent = () => {
   const toggle = () => {
     setIsOpen(!isOpen);
   };
-  const {accessTokenPayload} = getUseOidcAccessToken()();
+  const { accessTokenPayload } = getUseOidcAccessToken()();
   const userInfo = SSOEnabled
     ? (accessTokenPayload as UserInfo)
     : NoSSOUserInfo;
-  
+
   return (
-    <div>
-      <Navbar color="primary" dark expand="lg">
-        <Container>
-          <NavLink to="/" className={"navbar-brand"}>
-            InfoSys
-          </NavLink>
-          <NavbarToggler onClick={toggle} />
-          <Collapse isOpen={isOpen} navbar>
-            <Nav navbar>
-              {/* to add stuff to the navbar, add a NavItem tag with a NavLink to the route */}
-              <NavItem>
-                <NavLink to="/" className="nav-link">
-                  Home
-                </NavLink>
-              </NavItem>
-              <NavItem>
-                <NavLink to="/message" className="nav-link">
-                  Submit a Message
-                </NavLink>
-              </NavItem>
-              <NavItem>
-                <NavLink to={`message/${userInfo.preferred_username}`} className="nav-link">
-                  My Messages
-                </NavLink>
-              </NavItem>
-            </Nav>
-            <Nav navbar className="ml-auto">
-              <Profile />
-              {/*
-                FIXME: ThemeToggle from InfoSys-Frontend depends on Helmet, which is giving me
-                conflicts.
-                https://github.com/ikopke23/InfoSys-Frontend/blob/master/src/components/ThemeToggle.tsx 
-              <NavItem className="nav-link">
-                <ThemeToggle />
-              </NavItem>*/}
-            </Nav>
-          </Collapse>
-        </Container>
-      </Navbar>
-    </div>
+    <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
+      <a className="navbar-brand" href="#">
+        Navbar
+      </a>
+      <button
+        className="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarColor01"
+        aria-controls="navbarColor01"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span className="navbar-toggler-icon"></span>
+      </button>
+
+      <div className="collapse navbar-collapse" id="navbarColor01">
+        <ul className="navbar-nav mr-auto">
+          <li className="nav-item active">
+            <a className="nav-link" href="#">
+              Home <span className="sr-only">(current)</span>
+            </a>
+          </li>
+          <li className="nav-item">
+            <a className="nav-link" href="#">
+              Features
+            </a>
+          </li>
+          <li className="nav-item">
+            <a className="nav-link" href="#">
+              Pricing
+            </a>
+          </li>
+          <li className="nav-item">
+            <a className="nav-link" href="#">
+              About
+            </a>
+          </li>
+        </ul>
+        <form className="form-inline my-2 my-lg-0">
+          <input
+            className="form-control mr-sm-2"
+            type="text"
+            placeholder="Search"
+          />
+          <button className="btn btn-secondary my-2 my-sm-0" type="submit">
+            Search
+          </button>
+        </form>
+        <ul className="nav navbar-nav ml-auto">
+          <li className="nav-item navbar-user dropdown">
+            <a
+              className="nav-link dropdown-toggle"
+              data-toggle="dropdown"
+              href="#"
+              id="user01"
+            >
+              <img src="https://profiles.csh.rit.edu/image/test" />
+              Testing Tester
+              <span className="caret"></span>
+            </a>
+            <div className="dropdown-menu" aria-labelledby="user01">
+              <a className="dropdown-item" href="#">
+                Profile
+              </a>
+              <a className="dropdown-item" href="#">
+                Settings
+              </a>
+              <div className="dropdown-divider"></div>
+              <a className="dropdown-item" href="#">
+                Logout
+              </a>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </nav>
   );
 };
 

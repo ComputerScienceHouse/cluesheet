@@ -1,4 +1,4 @@
-import {OidcConfiguration} from "@axa-fr/react-oidc";
+import { OidcConfiguration } from "@axa-fr/react-oidc";
 
 const oidcConfig: OidcConfiguration = {
   client_id: process.env.NEXT_PUBLIC_SSO_CLIENT_ID ?? "test",
@@ -16,9 +16,9 @@ const oidcConfig: OidcConfiguration = {
   refresh_time_before_tokens_expiration_in_second: 10,
 };
 
-export const apiPrefix =  process.env.NEXT_PUBLIC_API_PREFIX;
+export const apiPrefix = process.env.NEXT_PUBLIC_API_PREFIX;
 
 export const SSOEnabled = false;
-  //  (import.meta.env.VITE_SSO_ENABLED ?? "true") === "true";
+//  (import.meta.env.VITE_SSO_ENABLED ?? "true") === "true";
 
 export default oidcConfig;

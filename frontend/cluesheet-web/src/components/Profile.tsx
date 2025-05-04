@@ -7,7 +7,7 @@ import {
 
 import React from "react";
 import UserInfo from "@/lib/UserInfo";
-import {SSOEnabled} from "@/lib/Configuration";
+import { SSOEnabled } from "@/lib/Configuration";
 import {
   getUseOidcAccessToken,
   getUseOidcHook,
@@ -16,8 +16,8 @@ import {
 } from "@/lib/SSODisabledDefaults";
 
 const Profile: React.FunctionComponent = () => {
-  const {logout} = getUseOidcHook()();
-  const {accessTokenPayload} = getUseOidcAccessToken()();
+  const { logout } = getUseOidcHook()();
+  const { accessTokenPayload } = getUseOidcAccessToken()();
   const userInfo = SSOEnabled
     ? (accessTokenPayload as UserInfo)
     : NoSSOUserInfo;
