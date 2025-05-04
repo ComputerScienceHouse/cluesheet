@@ -1,12 +1,15 @@
-export type Clue = {
+export interface Clue {
   id: string;
-  completions: number; // Number of times this has been completed
   description: string;
   points: string;
   rule: Rule | null;
   tags: Array<string>;
   children: Array<Clue>;
 };
+
+export interface UserClue extends Clue {
+  completions: number; // Number of times this has been completed
+}
 
 export type Rule = {
   key: string;

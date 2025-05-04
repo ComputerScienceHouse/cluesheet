@@ -1,4 +1,4 @@
-import { Clue } from "@/lib/types";
+import { Clue, UserClue } from "@/lib/types";
 
 import styles from "./page.module.scss";
 import { useState } from "react";
@@ -8,7 +8,7 @@ interface LineItemProps {
 
 export default function LineItem({ clue }: LineItemProps) {
   // Initialize state to track if the checkbox is checked
-  const [isChecked, setIsChecked] = useState(Number(clue.completions) > 0);
+  const [isChecked, setIsChecked] = useState((clue as UserClue).completions !== undefined && Number((clue as UserClue).completions) > 0);
 
   // Handle checkbox change
   const handleClueChecked = () => {
@@ -19,12 +19,13 @@ export default function LineItem({ clue }: LineItemProps) {
   return (
     <>
       <div className={styles.lineItem}>
+        { (clue as UserClue).completions !== undefined &&
         <input
           type="checkbox"
           className={styles.customCheckboxInput}
           onChange={handleClueChecked}
           checked={isChecked}
-        />
+        />}
         <h5>
           {clue.points}: {clue.description}
         </h5>
