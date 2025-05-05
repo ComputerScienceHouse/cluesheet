@@ -3,6 +3,10 @@
   flex-direction: row;
 }
 
+.lineItem h5 {
+  margin: 0px;
+}
+
 /* Hide the default checkbox */
 .customCheckboxInput {
   display: none;
@@ -36,4 +40,22 @@
 /* Show the checkmark when checked */
 .customCheckboxInput:checked + .customCheckbox::after {
   opacity: 1; /* Show checkmark */
+}
+
+.description {
+  font-weight: 400;
+}
+
+.tags {
+  display:flex;
+  flex: 1;
+  flex-direction: row;
+  justify-content: right;
+}
+
+.tag {
+  border: 1px solid #ccc; /* Border color */
+  border-radius: 5px;
+  padding: 0 2px;
+  margin: 0 5px;
 }

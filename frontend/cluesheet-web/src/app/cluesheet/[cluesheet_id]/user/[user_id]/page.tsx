@@ -20,7 +20,7 @@ export default async function CluesheetEditor({
   //const { cluesheet_id } = await params;
   //const cluesheet = await fetch(`${cluesheetBackendEndpoint}/api/v1/cluesheet/${cluesheet_id}/user/${keycloak_uid}`);
   //console.log(`Got cluesheet object: ${await cluesheet.json()}`);
-  
+
   const cluesheet = mockUserCluesheet;
 
   return (

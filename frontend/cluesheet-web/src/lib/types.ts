@@ -5,7 +5,7 @@ export interface Clue {
   rule: Rule | null;
   tags: Array<string>;
   children: Array<Clue>;
-};
+}
 
 export interface UserClue extends Clue {
   completions: number; // Number of times this has been completed
