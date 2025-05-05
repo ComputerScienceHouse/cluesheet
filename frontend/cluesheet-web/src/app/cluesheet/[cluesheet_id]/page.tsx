@@ -33,7 +33,7 @@ export default async function CluesheetViewer({
           <div className={styles.clueList}>
             {cluesheet.clues.length > 0 &&
               cluesheet.clues.map((clue: Clue, index) => (
-                <ClueGroup key={`${clue.id}`} clue={clue} />
+                <ClueGroup key={`${clue.id}`} clue={clue} parent={null} />
               ))}
           </div>
         </Container>

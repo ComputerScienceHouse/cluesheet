@@ -37,7 +37,7 @@ export default async function CluesheetEditor({
           <div className={styles.clueList}>
             {cluesheet.clues.length > 0 &&
               cluesheet.clues.map((clue: UserClue) => (
-                <ClueGroup key={`${clue.id}`} clue={clue} />
+                <ClueGroup key={`${clue.id}`} clue={clue} parent={null} />
               ))}
           </div>
         </Container>

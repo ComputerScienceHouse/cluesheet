@@ -3,10 +3,11 @@ import { Clue, UserClue } from "@/lib/types";
 import styles from "./page.module.scss";
 import { useState } from "react";
 interface LineItemProps {
+  parent: Clue | UserClue | null;
   clue: Clue | UserClue;
 }
 
-export default function LineItem({ clue }: LineItemProps) {
+export default function LineItem({ parent, clue }: LineItemProps) {
   // Initialize state to track if the checkbox is checked
   const [isChecked, setIsChecked] = useState(
     (clue as UserClue).completions !== undefined &&
@@ -20,9 +21,18 @@ export default function LineItem({ clue }: LineItemProps) {
     // You can also perform any additional logic here, like updating the clue state
   };
 
+  const shouldLock = (parent !== null && (parent as UserClue).completions <= 0);
+
+  let tags = [];
+  if (parent != null) {
+    tags = clue.tags.filter(item => !parent.tags.includes(item));
+  } else {
+    tags = clue.tags;
+  }
+
   return (
     <>
-      <div className={styles.lineItem}>
+      <div className={`${styles.lineItem} ${shouldLock ? styles.locked : ''}`}>
         {(clue as UserClue).completions !== undefined && (
           <input
             type="checkbox"
@@ -38,8 +48,8 @@ export default function LineItem({ clue }: LineItemProps) {
           {clue.description}
         </h5>
         <div className={styles.tags}>
-          {clue.tags.length > 0 &&
-          clue.tags.map((tag: string, index) => (
+          {tags.length > 0 &&
+          tags.map((tag: string, index) => (
           <p className={styles.tag} key={index}>{tag}</p>
           ))}
         </div>
