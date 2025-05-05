@@ -82,11 +82,18 @@ func main() {
 			return
 		}
 
-		cluesheet, err := pgx.CollectRows(rows, pgx.RowToStructByName[Cluesheet])
+		cluesheet, err := pgx.CollectOneRow[Cluesheet](rows, pgx.RowToStructByNameLax[Cluesheet])
 		if err != nil {
 			http.Error(rw, fmt.Sprintf("failed getting cluesheet '%s': '%s'", vars["id"], err), 500)
 			return
 		}
+
+		clues, err := GetClues(ctx, conn, cluesheet.Id)
+		if err != nil {
+			http.Error(rw, fmt.Sprintf("failed resolving clues '%s': '%s'", vars["id"], err), 500)
+			return
+		}
+		cluesheet.Clues = &clues
 
 		data, err := json.Marshal(cluesheet)
 		if err != nil {
