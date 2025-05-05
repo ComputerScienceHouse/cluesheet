@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/signal"
+	"slices"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -104,10 +106,9 @@ func main() {
 		rw.Write(data)
 	})
 
-	v1.Path("/cluesheet/{id}").Methods("GET").HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		defer r.Body.Close()
-		// params:
-		/*
+	/*
+		POST /api/v1/cluesheet: create a cluesheet
+		params:
 			- ID (generated)
 			- Name
 			- Origin (optional)
@@ -118,7 +119,75 @@ func main() {
 			- visibility (optional, default hidden)
 			- Owners (optional, default creator)
 			- Groups (optional)
-		*/
+	*/
+	v1.Path("/cluesheet").Methods("POST").HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			http.Error(rw, fmt.Sprintf("failed to read request: %s", err.Error()), 400)
+			return
+		}
+
+		var params struct {
+			Name       string
+			Origin     *uuid.UUID
+			Creator    string
+			Visibility *string
+			Owners     []string
+			Groups     []string
+		}
+
+		err = json.Unmarshal(body, &params)
+		if err != nil {
+			http.Error(rw, fmt.Sprintf("failed to parse request: %s", err.Error()), 400)
+			return
+		}
+		if params.Name == "" {
+			http.Error(rw, "Name must not be empty", 400)
+			return
+		}
+		if params.Creator == "" {
+			http.Error(rw, "Creator must not be empty", 400)
+		}
+
+		if params.Visibility == nil || *params.Visibility == "" {
+			// TODO this isn't canonical
+			local := "hidden"
+			params.Visibility = &local
+		}
+
+		if !slices.Contains(params.Owners, params.Creator) {
+			params.Owners = append(params.Owners, params.Creator)
+		}
+
+		if params.Groups == nil {
+			params.Groups = []string{}
+		}
+
+		newSheet := Cluesheet{
+			Id:         uuid.New(),
+			Name:       params.Name,
+			Origin_id:  params.Origin,
+			Created_by: params.Creator,
+			Created_at: time.Now(),
+			Edited_by:  params.Creator,
+			Edited_at:  time.Now(),
+			Visibility: *params.Visibility,
+			Owners:     params.Owners,
+			Groups:     params.Groups,
+		}
+		_, err = conn.Exec(ctx, `insert into cluesheet (id, name, origin_id, created_by, created_at, edited_by, edited_at, visibility, owners, groups) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`, newSheet.Id, newSheet.Name, newSheet.Origin_id, newSheet.Created_by, newSheet.Created_at, newSheet.Edited_by, newSheet.Edited_at, newSheet.Visibility, newSheet.Owners, newSheet.Groups)
+		if err != nil {
+			http.Error(rw, fmt.Sprintf("failed to persist cluesheet: %s", err), 500)
+			return
+		}
+
+		data, err := json.Marshal(newSheet)
+		if err != nil {
+			http.Error(rw, fmt.Sprintf("failed marshalling cluesheet: '%s'", err), 500)
+			return
+		}
+		rw.Header().Set("Content-Type", "application/json")
+		rw.Write(data)
 	})
 
 	srv := &http.Server{
