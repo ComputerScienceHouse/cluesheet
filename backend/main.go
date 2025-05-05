@@ -68,6 +68,36 @@ func main() {
 	}
 
 	v1 := router.PathPrefix("/api/v1/").Subrouter()
+	v1.Path("/cluesheet").Methods("GET").HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		rows, err := conn.Query(r.Context(), `select id, name, origin_id, created_by, created_at, edited_by, edited_at, visibility, owners, groups from cluesheet`)
+		if err != nil {
+			http.Error(rw, fmt.Sprintf("failed getting cluesheets: '%s'", err), 500)
+			return
+		}
+
+		cluesheets, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Cluesheet])
+		if err != nil {
+			http.Error(rw, fmt.Sprintf("failed getting cluesheet: '%s'", err), 500)
+			return
+		}
+
+		for _, cluesheet := range cluesheets {
+			clues, err := GetClues(ctx, conn, cluesheet.Id)
+			if err != nil {
+				http.Error(rw, fmt.Sprintf("failed resolving clues: '%s'", err), 500)
+				return
+			}
+			cluesheet.Clues = &clues
+		}
+
+		data, err := json.Marshal(cluesheets)
+		if err != nil {
+			http.Error(rw, fmt.Sprintf("failed marshalling cluesheets: '%s'", err), 500)
+			return
+		}
+		rw.Header().Set("Content-Type", "application/json")
+		rw.Write(data)
+	})
 	v1.Path("/cluesheet/{id}").Methods("GET").HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
