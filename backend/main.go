@@ -32,27 +32,17 @@ func main() {
 	}
 	defer conn.Close()
 
-	_, err = conn.Exec(ctx, `insert into cluesheet (id, created_at) values
-	($1, $2)`, uuid.New(), time.Now())
-	if err != nil {
-		panic(err.Error())
-	}
-
 	router := mux.NewRouter()
 	router.HandleFunc("/", func(rw http.ResponseWriter, r *http.Request) {
-		defer r.Body.Close()
 		rw.Write([]byte(r.RemoteAddr))
 	})
 
+	// For debugging, I'm just listing all the cluesheets at startup
 	rows, err := conn.Query(ctx, `select id, created_at from cluesheet`)
 	if err != nil {
 		panic(err.Error())
 	}
-	/*
-		// For simpler error handling, consider using the higher-level pgx v5
-		// CollectRows() and ForEachRow() helpers instead.
 
-	*/
 	if rows.Err() != nil {
 		panic(rows.Err().Error())
 	}
@@ -99,7 +89,6 @@ func main() {
 		rw.Write(data)
 	})
 	v1.Path("/cluesheet/{id}").Methods("GET").HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		defer r.Body.Close()
 
 		vars := mux.Vars(r)
 		id, err := uuid.Parse(vars["id"])
