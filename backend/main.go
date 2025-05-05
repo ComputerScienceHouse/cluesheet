@@ -104,6 +104,23 @@ func main() {
 		rw.Write(data)
 	})
 
+	v1.Path("/cluesheet/{id}").Methods("GET").HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		// params:
+		/*
+			- ID (generated)
+			- Name
+			- Origin (optional)
+			- creator
+			- created time (generated)
+			- editor (from creator)
+			- edited time (generated)
+			- visibility (optional, default hidden)
+			- Owners (optional, default creator)
+			- Groups (optional)
+		*/
+	})
+
 	srv := &http.Server{
 		Addr:    ":8080",
 		Handler: router,

@@ -19,7 +19,7 @@ import (
 
 type Cluesheet struct {
 	Id         uuid.UUID
-	Name       *string
+	Name       string
 	Origin_id  *uuid.UUID /* originating cluesheet */
 	Created_by string     /* ipa unique id */
 	Created_at time.Time  /* no timezone by default */
