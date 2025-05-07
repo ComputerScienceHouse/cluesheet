@@ -11,6 +11,8 @@ import (
 	"slices"
 	"time"
 
+	"csh/cluesheet/config"
+
 	"github.com/gorilla/mux"
 
 	"github.com/jackc/pgx/v5"
@@ -26,6 +28,8 @@ const (
 func main() {
 	ctx := context.Background()
 
+	ctx = config.ContextWithConfig(ctx, config.GetConfig(ctx))
+
 	conn, err := pgxpool.New(ctx, connStr)
 	if err != nil {
 		panic(err.Error())
@@ -33,29 +37,20 @@ func main() {
 	defer conn.Close()
 
 	router := mux.NewRouter()
+
+	// Pass the config in context to all requests
+	router.Use(func(h http.Handler) http.Handler {
+		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+			ctx := r.Context()
+			ctx = config.ContextWithConfig(ctx, config.GetConfig(ctx))
+			r = r.WithContext(ctx)
+			h.ServeHTTP(rw, r)
+		})
+	})
+
 	router.HandleFunc("/", func(rw http.ResponseWriter, r *http.Request) {
 		rw.Write([]byte(r.RemoteAddr))
 	})
-
-	// For debugging, I'm just listing all the cluesheets at startup
-	rows, err := conn.Query(ctx, `select id, created_at from cluesheet`)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	if rows.Err() != nil {
-		panic(rows.Err().Error())
-	}
-
-	for rows.Next() {
-		var id *uuid.UUID
-		var creation *time.Time
-		err := rows.Scan(&id, &creation)
-		if err != nil {
-			panic(err.Error())
-		}
-		fmt.Printf("%v, %v\n", id, creation)
-	}
 
 	v1 := router.PathPrefix("/api/v1/").Subrouter()
 	v1.Path("/cluesheet").Methods("GET").HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
@@ -346,7 +341,7 @@ func main() {
 		signal.Notify(c, os.Interrupt)
 		<-c
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
+		ctx, cancel := context.WithTimeout(ctx, time.Second*15)
 		defer cancel()
 		go func() {
 			select {
