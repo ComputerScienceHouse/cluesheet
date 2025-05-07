@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"csh/cluesheet/config"
+	"csh/cluesheet/log"
 
 	"github.com/DataDog/dd-trace-go/v2/ddtrace/tracer"
 
@@ -22,6 +23,8 @@ import (
 	"github.com/jackc/pgx/v5"
 
 	"github.com/google/uuid"
+
+	"go.uber.org/zap"
 )
 
 const (
@@ -32,6 +35,7 @@ func main() {
 	ctx := context.Background()
 
 	ctx = config.ContextWithConfig(ctx, config.GetConfig(ctx))
+	ctx = log.ContextWithLogger(ctx, log.GetLogger(ctx))
 
 	if config.FromContext(ctx).GetBool("tracing.enabled") {
 		tracer.Start(
@@ -40,21 +44,23 @@ func main() {
 			// tracer.WithServiceVersion(), // TODO add once we have a git commit
 		)
 		defer tracer.Stop()
+		log.FromContext(ctx).Debug("started tracing")
 	}
 
 	conn, err := pgxtrace.NewPool(ctx, connStr)
 	if err != nil {
-		panic(err.Error())
+		log.FromContext(ctx).Fatal("failed setting up db pool", zap.Error(err))
 	}
 	defer conn.Close()
 
 	router := muxtrace.NewRouter()
 
-	// Pass the config in context to all requests
+	// Pass the logger and config in context to all requests
 	router.Use(func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
 			ctx = config.ContextWithConfig(ctx, config.GetConfig(ctx))
+			ctx = log.ContextWithLogger(ctx, log.GetLogger(ctx))
 			r = r.WithContext(ctx)
 			h.ServeHTTP(rw, r)
 		})
@@ -348,6 +354,9 @@ func main() {
 		Handler: router,
 	}
 
+	// channel to prevent the main thread from exiting too early
+	shutdown := make(chan struct{})
+
 	go func() {
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, os.Interrupt)
@@ -363,8 +372,13 @@ func main() {
 			case <-ctx.Done():
 			}
 		}()
+		log.FromContext(ctx).Info("shutting down gracefully")
 		srv.Shutdown(ctx)
+		shutdown <- struct{}{}
 	}()
 
+	log.FromContext(ctx).Info("starting http server")
 	srv.ListenAndServe()
+	<-shutdown
+	log.FromContext(ctx).Info("exiting...")
 }
