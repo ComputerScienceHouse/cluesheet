@@ -3,13 +3,12 @@ import styles from "./page.module.scss";
 import { Container } from "reactstrap";
 import FlipNumbers from "react-flip-numbers";
 import PointCounter from "@/components/viewer/counter/PointCounter";
-import { Clue, UserClue } from "@/lib/types";
-import ClueGroup from "@/components/viewer/cluegroup/ClueGroup";
+import { Clue } from "@/lib/types";
 import { mockUserCluesheet } from "../../../../../../tests/lib/data";
 
 export const metadata = {
   title: "View cluesheet",
-  description: "View an mf cluesheet kerchoo",
+  description: "Edit an mf cluesheet kerchoo",
 };
 
 export default async function CluesheetEditor({
@@ -35,10 +34,10 @@ export default async function CluesheetEditor({
             </div>
           </div>
           <div className={styles.clueList}>
-            {cluesheet.clues.length > 0 &&
+            {/*cluesheet.clues.length > 0 &&
               cluesheet.clues.map((clue: UserClue) => (
                 <ClueGroup key={`${clue.id}`} clue={clue} parent={null} />
-              ))}
+              ))*/}
           </div>
         </Container>
       </main>
