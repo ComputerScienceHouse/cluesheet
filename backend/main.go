@@ -13,10 +13,13 @@ import (
 
 	"csh/cluesheet/config"
 
+	"github.com/DataDog/dd-trace-go/v2/ddtrace/tracer"
+
+	muxtrace "github.com/DataDog/dd-trace-go/contrib/gorilla/mux/v2"
 	"github.com/gorilla/mux"
 
+	pgxtrace "github.com/DataDog/dd-trace-go/contrib/jackc/pgx.v5/v2"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/google/uuid"
 )
@@ -30,13 +33,22 @@ func main() {
 
 	ctx = config.ContextWithConfig(ctx, config.GetConfig(ctx))
 
-	conn, err := pgxpool.New(ctx, connStr)
+	if config.FromContext(ctx).GetBool("tracing.enabled") {
+		tracer.Start(
+			tracer.WithEnv(config.FromContext(ctx).GetString("env")),
+			tracer.WithService("cluesheet"),
+			// tracer.WithServiceVersion(), // TODO add once we have a git commit
+		)
+		defer tracer.Stop()
+	}
+
+	conn, err := pgxtrace.NewPool(ctx, connStr)
 	if err != nil {
 		panic(err.Error())
 	}
 	defer conn.Close()
 
-	router := mux.NewRouter()
+	router := muxtrace.NewRouter()
 
 	// Pass the config in context to all requests
 	router.Use(func(h http.Handler) http.Handler {
