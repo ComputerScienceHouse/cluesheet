@@ -118,10 +118,22 @@ export const mockUserCluesheet = {
     {
       id: "my-sick-and-poggers-uuid-6",
       completions: 3,
-      description: "Fix something broken (stacks)",
+      description: "Fix something broken",
       points: "+10",
-      rule: null,
+      rule: {
+        key: "stacks",
+        description: "You can complete this clue as many times as you want."
+      },
       tags: [],
+      children: [],
+    },
+    {
+      id: "my-sick-and-poggers-uuid-26",
+      completions: 3,
+      description: "Die",
+      points: "+100000",
+      rule: null,
+      tags: ["death"],
       children: [],
     },
   ],

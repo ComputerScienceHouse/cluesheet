@@ -5,6 +5,7 @@ import FlipNumbers from "react-flip-numbers";
 import PointCounter from "@/components/viewer/counter/PointCounter";
 import { Clue } from "@/lib/types";
 import { mockUserCluesheet } from "../../../../../../tests/lib/data";
+import { ClueList } from "@/components/viewer/ClueList/ClueList";
 
 export const metadata = {
   title: "View cluesheet",
@@ -34,10 +35,9 @@ export default async function CluesheetEditor({
             </div>
           </div>
           <div className={styles.clueList}>
-            {/*cluesheet.clues.length > 0 &&
-              cluesheet.clues.map((clue: UserClue) => (
-                <ClueGroup key={`${clue.id}`} clue={clue} parent={null} />
-              ))*/}
+            {cluesheet.clues.length > 0 && (
+              <ClueList ancestors={[]} clues={cluesheet.clues} edit={true} />
+            )}
           </div>
         </Container>
       </main>

@@ -1,3 +1,4 @@
+"use client"
 import { Clue } from "@/lib/types";
 import styles from "./page.module.scss";
 
@@ -30,16 +31,29 @@ export function ClueItem() {}
 interface ClueItemProps {
   ancestors: Array<Clue>;
   clues: Array<Clue>;
+  edit: boolean;
 }
 
-export function ClueList({ ancestors, clues }: ClueItemProps) {
-  /*
-  const transformedClues = clues.map((clue: ClueListUserClue, index) => {
-    if (parent !== null) {
-      clue.parent = parent;
-    }
-  });
-  */
+function handleClueChecked() {
+  console.log("Checked!");
+}
+
+function getInputField(clue: Clue) {
+  if (clue.rule?.key === "stacks") {
+    return (<input type="number"/>);
+  }
+
+  return (
+    <input
+      type="checkbox"
+      className={styles.customCheckboxInput}
+      onChange={handleClueChecked}
+      checked={clue.checked}
+    />
+  );
+}
+
+export function ClueList({ ancestors, clues, edit = false }: ClueItemProps) {
   const ancestorTags: string[] = ancestors.flatMap((ancestor) => ancestor.tags);
 
   return (
@@ -48,7 +62,10 @@ export function ClueList({ ancestors, clues }: ClueItemProps) {
         clues.map((clue: Clue, index) => (
           <li key={clue.id} className={styles.clueBody}>
             <div className={styles.lineItem}>
-              <div className={styles.points}>{clue.points}</div>
+              { edit &&
+                getInputField(clue)
+              }
+              <div className={styles.points}>{clue.points} {clue.rule && `(${clue.rule.key})`}</div>
               <div className={styles.description}>{clue.description}</div>
               <div className={styles.tags}>
                 {clue.tags
@@ -65,6 +82,7 @@ export function ClueList({ ancestors, clues }: ClueItemProps) {
               <ClueList
                 ancestors={[...ancestors, clue]}
                 clues={clue.children}
+                edit={edit}
               />
             )}
           </li>
