@@ -34,11 +34,12 @@ interface ClueItemProps {
   edit: boolean;
 }
 
-function handleClueChecked() {
+function handleClueChecked(e, ancestors: Array<Clue>) {
+  e.preventDefault();
   console.log("Checked!");
 }
 
-function getInputField(clue: Clue) {
+function getInputField(clue: Clue, ancestors: Array<Clue>) {
   if (clue.rule?.key === "stacks") {
     return (<input type="number"/>);
   }
@@ -47,7 +48,7 @@ function getInputField(clue: Clue) {
     <input
       type="checkbox"
       className={styles.customCheckboxInput}
-      onChange={handleClueChecked}
+      onChange={(e) => handleClueChecked(e, ancestors)}
       checked={clue.checked}
     />
   );
