@@ -21,6 +21,8 @@ function getInputField(clue: Clue, ancestors: Array<Clue>) {
   
   // checkbox click handler
   function handleClick(e) {
+    // TODO (wdn): Send click event to server to have server re-compute score
+    // and let us know our click was successfully recorded.
     console.log(`${clue.id} checked`);
     setChecked(!checked);
   };
