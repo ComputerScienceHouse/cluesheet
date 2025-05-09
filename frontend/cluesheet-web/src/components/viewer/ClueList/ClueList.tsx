@@ -1,30 +1,7 @@
 "use client"
 import { Clue } from "@/lib/types";
 import styles from "./page.module.scss";
-
-/*const transform = (data: Clue, parent: Clue) =>  {
-    return Object.keys(data).map((key) => {
-        const value = data[key];
-        const node = {
-            label: key,
-            checked: false,
-            childrenNodes: [],
-            parent: parent,
-        };
-
-        if (typeof value === "boolean") {
-            node.checked = value;
-        } else {
-            const children = transform(value, node);
-            node.childrenNodes = children;
-            if (children.every((node) => node.checked)) {
-                node.checked = true;
-            }
-        }
-
-        return node;
-    });
-}*/
+import { useState } from "react";
 
 export function ClueItem() {}
 
@@ -34,22 +11,27 @@ interface ClueItemProps {
   edit: boolean;
 }
 
-function handleClueChecked(e, ancestors: Array<Clue>) {
-  e.preventDefault();
-  console.log("Checked!");
-}
-
 function getInputField(clue: Clue, ancestors: Array<Clue>) {
   if (clue.rule?.key === "stacks") {
     return (<input type="number"/>);
   }
 
+  // state
+  const [checked, setChecked] = useState(clue.checked ?? false);
+  
+  // checkbox click handler
+  function handleClick(e) {
+    console.log(`${clue.id} checked`);
+    setChecked(!checked);
+  };
+
   return (
     <input
       type="checkbox"
+      value={clue.id}
       className={styles.customCheckboxInput}
-      onChange={(e) => handleClueChecked(e, ancestors)}
-      checked={clue.checked}
+      onChange={handleClick}
+      checked={checked}
     />
   );
 }
@@ -64,7 +46,7 @@ export function ClueList({ ancestors, clues, edit = false }: ClueItemProps) {
           <li key={clue.id} className={styles.clueBody}>
             <div className={styles.lineItem}>
               { edit &&
-                getInputField(clue)
+                getInputField(clue, ancestors)
               }
               <div className={styles.points}>{clue.points} {clue.rule && `(${clue.rule.key})`}</div>
               <div className={styles.description}>{clue.description}</div>
