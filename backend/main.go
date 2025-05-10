@@ -286,7 +286,7 @@ func main() {
 		tx, err := conn.Begin(r.Context())
 		if err != nil {
 			http.Error(rw, "failed to store clue", 500)
-			fmt.Printf(err.Error())
+			fmt.Println(err.Error())
 			return
 		}
 		defer tx.Rollback(r.Context())
@@ -303,7 +303,7 @@ func main() {
 		)
 		if err != nil {
 			http.Error(rw, "failed to store clue", 500)
-			fmt.Printf(err.Error())
+			fmt.Println(err.Error())
 			return
 		}
 
@@ -323,7 +323,7 @@ func main() {
 			_, err = tx.Exec(r.Context(), `insert into clue_relation(id, parent_id, child_id) values ($1, $2, $3)`, cr.Id, cr.Parent_id, cr.Child_id)
 			if err != nil {
 				http.Error(rw, "failed to store clue parent", 500)
-				fmt.Printf(err.Error())
+				fmt.Println(err.Error())
 				return
 			}
 		}
@@ -331,17 +331,17 @@ func main() {
 		err = tx.Commit(r.Context())
 		if err != nil {
 			http.Error(rw, "failed to store clue with parent", 500)
-			fmt.Printf(err.Error())
+			fmt.Println(err.Error())
 			return
 		}
 
 		data, err := json.Marshal(struct {
 			Clue         Clue
-			ClueRelation *ClueRelation `json:,omitempty,omitzero`
+			ClueRelation *ClueRelation `json:",omitempty,omitzero"`
 		}{Clue: newClue, ClueRelation: cr})
 		if err != nil {
 			http.Error(rw, "Failed to marshal data", 500)
-			fmt.Printf(err.Error())
+			fmt.Println(err.Error())
 			return
 		}
 

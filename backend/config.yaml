@@ -1,3 +1,4 @@
 tracing:
   enabled: false
 environment: "local"
+version: "local-dev"

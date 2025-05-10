@@ -3,6 +3,7 @@ package log
 import (
 	"context"
 
+	"github.com/DataDog/dd-trace-go/v2/ddtrace/tracer"
 	"go.uber.org/zap"
 
 	"csh/cluesheet/config"
@@ -38,8 +39,22 @@ func ContextWithLogger(ctx context.Context, logger *zap.Logger) context.Context 
 
 func FromContext(ctx context.Context) *zap.Logger {
 	l := ctx.Value(contextKey)
+	var logger *zap.Logger
 	if l == nil {
-		return zap.L()
+		logger = zap.L()
+	} else {
+		logger = l.(*zap.Logger)
 	}
-	return l.(*zap.Logger)
+
+	config := config.FromContext(ctx)
+	if span, ok := tracer.SpanFromContext(ctx); ok {
+		spanContext := span.Context()
+		logger = logger.With(
+			zap.String("dd.trace_id", spanContext.TraceID()),
+			zap.Uint64("dd.span_id", spanContext.SpanID()),
+			zap.String("dd.version", config.GetString("version")),
+			zap.String("dd.env", config.GetString("environment")),
+		)
+	}
+	return logger
 }

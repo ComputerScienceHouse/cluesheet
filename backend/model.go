@@ -28,7 +28,7 @@ type Cluesheet struct {
 	Visibility string     /* TODO: int key? or defined enum? I think SQL enums are difficult to work with in migrations */
 	Owners     []string
 	Groups     []string
-	Clues      *[]Clue
+	Clues      *[]Clue `json:",omitzero"`
 }
 
 type Clue struct {
@@ -42,7 +42,7 @@ type Clue struct {
 	Edited_by   string
 	Edited_at   time.Time
 	Tags        []string
-	Children    []*Clue
+	Children    []*Clue `json:",omitzero"`
 }
 
 type ClueRelation struct {
