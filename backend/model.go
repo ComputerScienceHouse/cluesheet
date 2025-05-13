@@ -45,6 +45,12 @@ type Clue struct {
 	Children    []*Clue `json:",omitzero"`
 }
 
+type UserParticipation struct {
+	Cluesheet_id uuid.UUID
+	Ipa_uid      string
+	Hidden       bool
+}
+
 type ClueRelation struct {
 	Id        uuid.UUID
 	Parent_id uuid.UUID
