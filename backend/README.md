@@ -6,6 +6,9 @@
 4. In `backend`, run `migrate -source file://$(pwd)/migrations -database postgres://postgres:test@localhost:5432/postgres?sslmode=disable up`, on windows run `migrate -path ./migrations -database postgres://postgres:test@localhost:5432/postgres?sslmode=disable up`
 5. In `backend`, run `go run .`
 
+### Version tagging
+If compiled with `-buildvcs`, traces and logs will include a commit hash. You can keep this set by running `go env -w GOFLAGS=-buildvcs`
+
 ### Adding new dependencies
 
 `go mod tidy`

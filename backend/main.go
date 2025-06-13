@@ -37,11 +37,18 @@ func main() {
 	ctx = config.ContextWithConfig(ctx, config.GetConfig(ctx))
 	ctx = log.ContextWithLogger(ctx, log.GetLogger(ctx))
 
+	// Tag all logs with the version string if we have one
+	if config.FromContext(ctx).GetString("version") != "" {
+		ctx = log.ContextWithLogger(ctx, log.GetLogger(ctx).With(
+			zap.String("version", config.FromContext(ctx).GetString("version")),
+		))
+	}
+
 	if config.FromContext(ctx).GetBool("tracing.enabled") {
 		tracer.Start(
 			tracer.WithEnv(config.FromContext(ctx).GetString("env")),
 			tracer.WithService("cluesheet"),
-			// tracer.WithServiceVersion(), // TODO add once we have a git commit
+			tracer.WithServiceVersion(config.FromContext(ctx).GetString("version")),
 		)
 		defer tracer.Stop()
 		log.FromContext(ctx).Debug("started tracing")

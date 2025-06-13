@@ -3,12 +3,26 @@ package config
 import (
 	"context"
 	"fmt"
+	"runtime/debug"
 	"sync"
 
 	"github.com/spf13/viper"
 )
 
 var once sync.Once
+
+// If compiled with -buildvcs, this will be populated with the commit hash
+// This maybe isn't the nicest versioning scheme, but it's _something_
+var version = func() string {
+	if buildInfo, ok := debug.ReadBuildInfo(); ok {
+		for _, setting := range buildInfo.Settings {
+			if setting.Key == "vcs.revision" {
+				return setting.Value
+			}
+		}
+	}
+	return ""
+}()
 
 /*
 * GetConfig determines what config file to look at based on the environment, and constructs a config to use
@@ -20,6 +34,7 @@ func GetConfig(_ context.Context) *viper.Viper {
 	config.BindEnv("config_path")
 	config.BindEnv("environment")
 	config.SetDefault("environment", "local")
+	config.SetDefault("version", version)
 
 	if config.IsSet("config_path") {
 		config.SetConfigFile(config.GetString("config_path"))
