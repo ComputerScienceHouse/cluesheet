@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:17 
+    image: docker.io/library/postgres:17 
     container_name: cluesheet_postgres
     ports:
       - 5432:5432

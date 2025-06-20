@@ -21,6 +21,7 @@ import (
 
 	pgxtrace "github.com/DataDog/dd-trace-go/contrib/jackc/pgx.v5/v2"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/google/uuid"
 
@@ -31,43 +32,24 @@ const (
 	connStr = "postgres://postgres:test@localhost:5432/postgres?sslmode=disable"
 )
 
-func main() {
-	ctx := context.Background()
-
-	ctx = config.ContextWithConfig(ctx, config.GetConfig(ctx))
-	ctx = log.ContextWithLogger(ctx, log.GetLogger(ctx))
-
-	// Tag all logs with the version string if we have one
-	if config.FromContext(ctx).GetString("version") != "" {
-		ctx = log.ContextWithLogger(ctx, log.GetLogger(ctx).With(
-			zap.String("version", config.FromContext(ctx).GetString("version")),
-		))
-	}
-
-	if config.FromContext(ctx).GetBool("tracing.enabled") {
-		tracer.Start(
-			tracer.WithEnv(config.FromContext(ctx).GetString("env")),
-			tracer.WithService("cluesheet"),
-			tracer.WithServiceVersion(config.FromContext(ctx).GetString("version")),
-		)
-		defer tracer.Stop()
-		log.FromContext(ctx).Debug("started tracing")
-	}
-
-	conn, err := pgxtrace.NewPool(ctx, connStr)
-	if err != nil {
-		log.FromContext(ctx).Fatal("failed setting up db pool", zap.Error(err))
-	}
-	defer conn.Close()
-
-	router := muxtrace.NewRouter()
-
+/**
+* registerRoutes applies all the routes to the given mux router
+* It's intended to break things out of main for testing
+*
+* rootContext is the context that the router's logger and config will be read
+*     from, it is expected to be descended from the context in main
+*
+* router is the mux router to register routes on
+*
+* conn is the database connection
+ */
+func registerRoutes(rootContext context.Context, router *muxtrace.Router, conn *pgxpool.Pool) {
 	// Pass the logger and config in context to all requests
 	router.Use(func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
-			ctx = config.ContextWithConfig(ctx, config.GetConfig(ctx))
-			ctx = log.ContextWithLogger(ctx, log.GetLogger(ctx))
+			ctx = config.ContextWithConfig(ctx, config.FromContext(rootContext))
+			ctx = log.ContextWithLogger(ctx, log.FromContext(rootContext))
 			r = r.WithContext(ctx)
 			h.ServeHTTP(rw, r)
 		})
@@ -92,7 +74,7 @@ func main() {
 		}
 
 		for _, cluesheet := range cluesheets {
-			clues, err := GetClues(ctx, conn, cluesheet.Id)
+			clues, err := GetClues(r.Context(), conn, cluesheet.Id)
 			if err != nil {
 				http.Error(rw, fmt.Sprintf("failed resolving clues: '%s'", err), 500)
 				return
@@ -129,7 +111,7 @@ func main() {
 			return
 		}
 
-		clues, err := GetClues(ctx, conn, cluesheet.Id)
+		clues, err := GetClues(r.Context(), conn, cluesheet.Id)
 		if err != nil {
 			http.Error(rw, fmt.Sprintf("failed resolving clues '%s': '%s'", vars["id"], err), 500)
 			return
@@ -166,14 +148,7 @@ func main() {
 			return
 		}
 
-		var params struct {
-			Name       string
-			Origin     *uuid.UUID
-			Creator    string
-			Visibility *string
-			Owners     []string
-			Groups     []string
-		}
+		var params PostCluesheetParams
 
 		err = json.Unmarshal(body, &params)
 		if err != nil {
@@ -214,7 +189,7 @@ func main() {
 			Owners:     params.Owners,
 			Groups:     params.Groups,
 		}
-		_, err = conn.Exec(ctx, `insert into cluesheet (id, name, origin_id, created_by, created_at, edited_by, edited_at, visibility, owners, groups) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`, newSheet.Id, newSheet.Name, newSheet.Origin_id, newSheet.Created_by, newSheet.Created_at, newSheet.Edited_by, newSheet.Edited_at, newSheet.Visibility, newSheet.Owners, newSheet.Groups)
+		_, err = conn.Exec(r.Context(), `insert into cluesheet (id, name, origin_id, created_by, created_at, edited_by, edited_at, visibility, owners, groups) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`, newSheet.Id, newSheet.Name, newSheet.Origin_id, newSheet.Created_by, newSheet.Created_at, newSheet.Edited_by, newSheet.Edited_at, newSheet.Visibility, newSheet.Owners, newSheet.Groups)
 		if err != nil {
 			http.Error(rw, fmt.Sprintf("failed to persist cluesheet: %s", err), 500)
 			return
@@ -444,6 +419,41 @@ func main() {
 		rw.Header().Set("Content-Type", "application/json")
 		rw.Write(data)
 	})
+
+}
+
+func main() {
+	ctx := context.Background()
+
+	ctx = config.ContextWithConfig(ctx, config.GetConfig(ctx))
+	ctx = log.ContextWithLogger(ctx, log.GetLogger(ctx))
+
+	// Tag all logs with the version string if we have one
+	if config.FromContext(ctx).GetString("version") != "" {
+		ctx = log.ContextWithLogger(ctx, log.GetLogger(ctx).With(
+			zap.String("version", config.FromContext(ctx).GetString("version")),
+		))
+	}
+
+	if config.FromContext(ctx).GetBool("tracing.enabled") {
+		tracer.Start(
+			tracer.WithEnv(config.FromContext(ctx).GetString("env")),
+			tracer.WithService("cluesheet"),
+			tracer.WithServiceVersion(config.FromContext(ctx).GetString("version")),
+		)
+		defer tracer.Stop()
+		log.FromContext(ctx).Debug("started tracing")
+	}
+
+	conn, err := pgxtrace.NewPool(ctx, connStr)
+	if err != nil {
+		log.FromContext(ctx).Fatal("failed setting up db pool", zap.Error(err))
+	}
+	defer conn.Close()
+
+	router := muxtrace.NewRouter()
+
+	registerRoutes(ctx, router, conn)
 
 	srv := &http.Server{
 		Addr:    ":8080",

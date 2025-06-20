@@ -18,17 +18,17 @@ import (
 )
 
 type Cluesheet struct {
-	Id         uuid.UUID
-	Name       string
-	Origin_id  *uuid.UUID /* originating cluesheet */
-	Created_by string     /* ipa unique id */
-	Created_at time.Time  /* no timezone by default */
-	Edited_by  string     /* ipa unique id */
-	Edited_at  time.Time  /* no timezone */
-	Visibility string     /* TODO: int key? or defined enum? I think SQL enums are difficult to work with in migrations */
-	Owners     []string
-	Groups     []string
-	Clues      *[]Clue `json:",omitzero"`
+	Id         uuid.UUID  `json:"id"`
+	Name       string     `json:"name"`
+	Origin_id  *uuid.UUID `json:"origin_id"`  /* originating cluesheet */
+	Created_by string     `json:"created_by"` /* ipa unique id */
+	Created_at time.Time  `json:"created_at"` /* no timezone by default */
+	Edited_by  string     `json:"edited_by"`  /* ipa unique id */
+	Edited_at  time.Time  `json:"edited_at"`  /* no timezone */
+	Visibility string     `json:"visibility"` /* TODO: int key? or defined enum? I think SQL enums are difficult to work with in migrations */
+	Owners     []string   `json:"owners"`
+	Groups     []string   `json:"groups"`
+	Clues      *[]Clue    `json:"clues,omitzero"`
 }
 
 type Clue struct {
