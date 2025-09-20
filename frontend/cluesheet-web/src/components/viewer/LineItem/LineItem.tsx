@@ -23,18 +23,25 @@ export function LineItem({ ancestors, clue, handleCheckboxChange }: LineItemProp
   };
   */
 
+  const isStackable = clue.rule?.key === "stacks";
+
   return (
     <div className={styles.lineItem}>
-      {clue.rule?.key === "stacks" &&(
-      <input type="number"/>
-      ) : (
-          <input
+      {isStackable &&
+        <input
+          type="number"
+          onBlur={(e) => handleCheckboxChange(clue.id, e.target.value)}
+        />
+      }
+      {!isStackable &&
+      <input
         type="checkbox"
         value={clue.id}
         className={styles.customCheckboxInput}
         //checked={isChecked}
         onChange={() => handleCheckboxChange(clue.id)}
-      />)}
+      />
+      }
       <div className={styles.points}>
         {clue.points} {clue.rule && `(${clue.rule.key})`}
       </div>

@@ -26,12 +26,22 @@ export default function CluesheetForm({
   const cluesheet = mockUserCluesheet;
   const [clues, setClues] = useState(cluesheet.clues);
 
-  const handleCheckboxChange = (clueId: string) => {
+  const handleCheckboxChange = (clueId: string, completionValue: number = NaN) => {
     console.log(`changed ${clueId}`);
     setClues((clues) => {
       const updatedClues = clues.map((clue) => {
         if (clue.id === clueId) {
-          return { ...clue, checked: !clue.checked };
+          // Set the number of completions
+          if (!isNaN(completionValue)) {
+            return { ...clue, completions: completionValue }
+          }
+
+          // If the checkbox is not checked, then check it
+          if (clue.completions === 0) {
+            return { ...clue, completions: 1 };
+          }
+          // If the checkbox is checked, then un-check it
+          return { ...clue, completions: 0 };
         }
         return clue;
       });
