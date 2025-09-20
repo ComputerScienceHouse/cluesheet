@@ -6,25 +6,32 @@ import { LineItem } from "../LineItem/LineItem";
 
 export function ClueItem() {}
 
-interface ClueItemProps {
+interface ClueListProps {
   ancestors: Array<Clue>;
   clues: Array<Clue>;
   edit: boolean;
+  handleCheckboxChange: (clueId: string) => void;
 }
 
-export function ClueList({ ancestors, clues, edit = false }: ClueItemProps) {
+export function ClueList({
+  ancestors,
+  clues,
+  edit = false,
+  handleCheckboxChange,
+}: ClueListProps) {
   const ancestorTags: string[] = ancestors.flatMap((ancestor) => ancestor.tags);
 
   return (
     <ul>
       {clues.map((clue: Clue, index) => (
         <li key={clue.id} className={styles.clueBody}>
-          <LineItem ancestors={ancestors} clue={clue} />
+          <LineItem ancestors={ancestors} clue={clue} handleCheckboxChange={handleCheckboxChange} />
           {clue.children.length > 0 && (
             <ClueList
               ancestors={[...ancestors, clue]}
               clues={clue.children}
               edit={edit}
+              handleCheckboxChange={handleCheckboxChange}
             />
           )}
         </li>

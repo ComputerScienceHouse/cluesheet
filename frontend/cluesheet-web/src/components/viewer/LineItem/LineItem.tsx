@@ -5,13 +5,15 @@ import { useState } from "react";
 interface LineItemProps {
   ancestors: Array<Clue>;
   clue: Clue;
+  handleCheckboxChange: (clueId: string) => void;
 }
 
-export function LineItem({ ancestors, clue }: LineItemProps) {
+export function LineItem({ ancestors, clue, handleCheckboxChange }: LineItemProps) {
   const ancestorTags: string[] = ancestors.flatMap((ancestor) => ancestor.tags);
 
   const [isChecked, setIsChecked] = useState(false);
 
+  /*
   const handleCheckboxChange = async (event) => {
     console.log(`${clue.id} checked.`);
     const checked = event.target.checked;
@@ -19,16 +21,20 @@ export function LineItem({ ancestors, clue }: LineItemProps) {
 
     // TODO Perform the API call
   };
+  */
 
   return (
     <div className={styles.lineItem}>
-      <input
+      {clue.rule?.key === "stacks" &&(
+      <input type="number"/>
+      ) : (
+          <input
         type="checkbox"
         value={clue.id}
         className={styles.customCheckboxInput}
-        checked={isChecked}
-        onChange={handleCheckboxChange}
-      />
+        //checked={isChecked}
+        onChange={() => handleCheckboxChange(clue.id)}
+      />)}
       <div className={styles.points}>
         {clue.points} {clue.rule && `(${clue.rule.key})`}
       </div>

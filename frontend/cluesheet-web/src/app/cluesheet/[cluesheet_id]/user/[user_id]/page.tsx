@@ -19,16 +19,16 @@ export default async function CluesheetEditor({
   params: Promise<{ cluesheet_id: string; keycloak_uid: string }>;
 }) {
   const { cluesheet_id, keycloak_uid } = await params;
-  //const cluesheet = await fetch(`${cluesheetBackendEndpoint}/api/v1/cluesheet/${cluesheet_id}/user/${keycloak_uid}`);
-  //console.log(`Got cluesheet object: ${await cluesheet.json()}`);
-
   const cluesheet = mockUserCluesheet;
 
   return (
     <>
       <main>
         <Container>
-          <CluesheetForm cluesheet_id={cluesheet_id} keycloak_uid={keycloak_uid}/>
+          <CluesheetForm
+            cluesheet_id={cluesheet_id}
+            keycloak_uid={keycloak_uid}
+          />
         </Container>
       </main>
     </>
