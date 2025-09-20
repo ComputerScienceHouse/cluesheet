@@ -13,6 +13,7 @@ export function LineItem({ ancestors, clue }: LineItemProps) {
   const [isChecked, setIsChecked] = useState(false);
 
   const handleCheckboxChange = async (event) => {
+    console.log(`${clue.id} checked.`);
     const checked = event.target.checked;
     setIsChecked(checked);
 

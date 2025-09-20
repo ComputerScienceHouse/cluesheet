@@ -6,6 +6,7 @@ import PointCounter from "@/components/viewer/counter/PointCounter";
 import { Clue } from "@/lib/types";
 import { mockUserCluesheet } from "../../../../../../tests/lib/data";
 import { ClueList } from "@/components/viewer/ClueList/ClueList";
+import CluesheetForm from "@/components/form/CluesheetForm/CluesheetForm";
 
 export const metadata = {
   title: "View cluesheet",
@@ -17,7 +18,7 @@ export default async function CluesheetEditor({
 }: {
   params: Promise<{ cluesheet_id: string; keycloak_uid: string }>;
 }) {
-  //const { cluesheet_id } = await params;
+  const { cluesheet_id, keycloak_uid } = await params;
   //const cluesheet = await fetch(`${cluesheetBackendEndpoint}/api/v1/cluesheet/${cluesheet_id}/user/${keycloak_uid}`);
   //console.log(`Got cluesheet object: ${await cluesheet.json()}`);
 
@@ -27,18 +28,7 @@ export default async function CluesheetEditor({
     <>
       <main>
         <Container>
-          <div className={styles.header}>
-            <h1>{cluesheet.title}</h1>
-            <div className={styles.pointCounter}>
-              <PointCounter points={cluesheet.user_points} />
-              <h3>Points</h3>
-            </div>
-          </div>
-          <div className={styles.clueList}>
-            {cluesheet.clues.length > 0 && (
-              <ClueList ancestors={[]} clues={cluesheet.clues} edit={true} />
-            )}
-          </div>
+          <CluesheetForm cluesheet_id={cluesheet_id} keycloak_uid={keycloak_uid}/>
         </Container>
       </main>
     </>
