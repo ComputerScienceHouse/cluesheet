@@ -122,7 +122,7 @@ export const mockUserCluesheet = {
       points: "+10",
       rule: {
         key: "stacks",
-        description: "You can complete this clue as many times as you want."
+        description: "You can complete this clue as many times as you want.",
       },
       tags: [],
       children: [],

@@ -1,0 +1,40 @@
+.clueBody {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  margin: 10px;
+
+  border: 1px solid #ccc; /* Optional border */
+  padding: 10px; /* Optional padding */
+  border-radius: 8px; /* Optional rounded corners */
+}
+
+.lineItem {
+  display: flex;
+  flex-direction: row;
+}
+
+.points {
+  padding: 0 5px;
+  font-size: 1.5em;
+  font-weight: 700;
+}
+
+.description {
+  font-size: 1.5em;
+  font-weight: 400;
+}
+
+.tags {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  justify-content: right;
+}
+
+.tag {
+  border: 1px solid #ccc; /* Border color */
+  border-radius: 5px;
+  padding: 0 2px;
+  margin: 0 5px;
+}
