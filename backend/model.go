@@ -51,6 +51,12 @@ type UserParticipation struct {
 	Hidden       bool
 }
 
+type UserProgress struct {
+	Ipa_uid     string
+	Clue_id     uuid.UUID
+	Completions int // TODO this should become a double
+}
+
 type ClueRelation struct {
 	Id        uuid.UUID
 	Parent_id uuid.UUID
