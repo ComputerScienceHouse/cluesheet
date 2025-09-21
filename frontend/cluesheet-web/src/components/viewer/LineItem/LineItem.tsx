@@ -13,16 +13,6 @@ export function LineItem({ ancestors, clue, handleCheckboxChange }: LineItemProp
 
   const [isChecked, setIsChecked] = useState(false);
 
-  /*
-  const handleCheckboxChange = async (event) => {
-    console.log(`${clue.id} checked.`);
-    const checked = event.target.checked;
-    setIsChecked(checked);
-
-    // TODO Perform the API call
-  };
-  */
-
   const isStackable = clue.rule?.key === "stacks";
 
   return (
@@ -30,7 +20,8 @@ export function LineItem({ ancestors, clue, handleCheckboxChange }: LineItemProp
       {isStackable &&
         <input
           type="number"
-          onBlur={(e) => handleCheckboxChange(clue.id, e.target.value)}
+          value={clue.completions}
+          onChange={(e) => handleCheckboxChange(clue.id, e.target.value)}
         />
       }
       {!isStackable &&

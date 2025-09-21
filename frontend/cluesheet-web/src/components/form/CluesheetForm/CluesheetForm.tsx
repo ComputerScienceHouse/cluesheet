@@ -25,17 +25,37 @@ export default function CluesheetForm({
 
   const cluesheet = mockUserCluesheet;
   const [clues, setClues] = useState(cluesheet.clues);
+  const [score, setScore] = useState(cluesheet.user_points);
 
   const handleCheckboxChange = (clueId: string, completionValue: number = NaN) => {
     console.log(`changed ${clueId}`);
+
+    function updateClue(clue: Clue) {
+      console.log(clue);
+      return clue;
+    }
+
+    function updateClues(clues: Array<Clue>): Array<Clue> {
+      const updatedClues = clues.map((clue: Clue) => {
+        clue.children = updateClues(clue.children);
+        clue = updateClue(clue);
+        return clue;
+      });
+      return updatedClues;
+    }
+
+    updateClues(clues);
+
+
+    /*
     setClues((clues) => {
       const updatedClues = clues.map((clue) => {
         if (clue.id === clueId) {
+          console.log(`completions = ${clue.completions}`);
           // Set the number of completions
           if (!isNaN(completionValue)) {
             return { ...clue, completions: completionValue }
           }
-
           // If the checkbox is not checked, then check it
           if (clue.completions === 0) {
             return { ...clue, completions: 1 };
@@ -47,10 +67,32 @@ export default function CluesheetForm({
       });
       return updatedClues;
     });
+    */
+  };
+
+  function convertToInteger(input: string): number {
+    // Trim the input to remove any leading or trailing whitespace
+    const trimmedInput = input.trim();
+
+    // Use a regular expression to extract the numeric part
+    const match = trimmedInput.match(/[-+]?\d+/);
+
+    // If a match is found, convert it to an integer; otherwise, return NaN
+    return match ? parseInt(match[0], 10) : NaN;
+  }
+
+  const calculatePoints = () => {
+    let total = 0;
+    clues.map((clue) => {
+      const cluePoints = convertToInteger(clue.points);
+      total += cluePoints * clue.completions;
+    });
+    return total;
   };
 
   useEffect(() => {
     console.log(clues);
+    setScore(calculatePoints());
   }, [clues]);
 
   return (
@@ -58,7 +100,7 @@ export default function CluesheetForm({
       <div className={styles.header}>
         <h1>{cluesheet.title}</h1>
         <div className={styles.pointCounter}>
-          <PointCounter points={cluesheet.user_points} />
+          <PointCounter points={score} />
           <h3>Points</h3>
         </div>
       </div>
