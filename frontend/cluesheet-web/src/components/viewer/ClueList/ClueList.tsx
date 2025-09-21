@@ -25,7 +25,11 @@ export function ClueList({
     <ul>
       {clues.map((clue: Clue, index) => (
         <li key={clue.id} className={styles.clueBody}>
-          <LineItem ancestors={ancestors} clue={clue} handleCheckboxChange={handleCheckboxChange} />
+          <LineItem
+            ancestors={ancestors}
+            clue={clue}
+            handleCheckboxChange={handleCheckboxChange}
+          />
           {clue.children.length > 0 && (
             <ClueList
               ancestors={[...ancestors, clue]}

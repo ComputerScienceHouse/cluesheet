@@ -8,7 +8,11 @@ interface LineItemProps {
   handleCheckboxChange: (clueId: string) => void;
 }
 
-export function LineItem({ ancestors, clue, handleCheckboxChange }: LineItemProps) {
+export function LineItem({
+  ancestors,
+  clue,
+  handleCheckboxChange,
+}: LineItemProps) {
   const ancestorTags: string[] = ancestors.flatMap((ancestor) => ancestor.tags);
 
   const [isChecked, setIsChecked] = useState(false);
@@ -17,22 +21,22 @@ export function LineItem({ ancestors, clue, handleCheckboxChange }: LineItemProp
 
   return (
     <div className={styles.lineItem}>
-      {isStackable &&
+      {isStackable && (
         <input
           type="number"
           value={clue.completions}
           onChange={(e) => handleCheckboxChange(clue.id, e.target.value)}
         />
-      }
-      {!isStackable &&
-      <input
-        type="checkbox"
-        value={clue.id}
-        className={styles.customCheckboxInput}
-        //checked={isChecked}
-        onChange={() => handleCheckboxChange(clue.id)}
-      />
-      }
+      )}
+      {!isStackable && (
+        <input
+          type="checkbox"
+          value={clue.id}
+          className={styles.customCheckboxInput}
+          //checked={isChecked}
+          onChange={() => handleCheckboxChange(clue.id)}
+        />
+      )}
       <div className={styles.points}>
         {clue.points} {clue.rule && `(${clue.rule.key})`}
       </div>

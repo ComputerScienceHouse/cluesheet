@@ -27,25 +27,37 @@ export default function CluesheetForm({
   const [clues, setClues] = useState(cluesheet.clues);
   const [score, setScore] = useState(cluesheet.user_points);
 
-  const handleCheckboxChange = (clueId: string, completionValue: number = NaN) => {
-    console.log(`changed ${clueId}`);
-
-    function updateClue(clue: Clue) {
-      console.log(clue);
+  const handleCheckboxChange = (
+    clueId: string,
+    completionValue: number = NaN,
+  ) => {
+    function maybeUpdateClue(clueId: string, clue: Clue) {
+      if (clue.id === clueId) {
+        console.log(`completions = ${clue.completions}`);
+        // Set the number of completions
+        if (!isNaN(completionValue)) {
+          return { ...clue, completions: completionValue };
+        }
+        // If the checkbox is not checked, then check it
+        if (clue.completions === 0) {
+          return { ...clue, completions: 1 };
+        }
+        // If the checkbox is checked, then un-check it
+        return { ...clue, completions: 0 };
+      }
       return clue;
     }
 
     function updateClues(clues: Array<Clue>): Array<Clue> {
       const updatedClues = clues.map((clue: Clue) => {
         clue.children = updateClues(clue.children);
-        clue = updateClue(clue);
+        clue = maybeUpdateClue(clueId, clue);
         return clue;
       });
       return updatedClues;
     }
 
-    updateClues(clues);
-
+    setClues(updateClues(clues));
 
     /*
     setClues((clues) => {
@@ -81,9 +93,10 @@ export default function CluesheetForm({
     return match ? parseInt(match[0], 10) : NaN;
   }
 
-  const calculatePoints = () => {
+  const calculatePoints = (clues: Array<Clue>) => {
     let total = 0;
     clues.map((clue) => {
+      total += calculatePoints(clue.children);
       const cluePoints = convertToInteger(clue.points);
       total += cluePoints * clue.completions;
     });
@@ -91,8 +104,7 @@ export default function CluesheetForm({
   };
 
   useEffect(() => {
-    console.log(clues);
-    setScore(calculatePoints());
+    setScore(calculatePoints(clues));
   }, [clues]);
 
   return (
