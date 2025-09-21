@@ -15,7 +15,7 @@ export function LineItem({
 }: LineItemProps) {
   const ancestorTags: string[] = ancestors.flatMap((ancestor) => ancestor.tags);
 
-  const [isChecked, setIsChecked] = useState(false);
+  const [isChecked, setIsChecked] = useState(clue.completions > 0);
 
   const isStackable = clue.rule?.key === "stacks";
 
@@ -33,7 +33,7 @@ export function LineItem({
           type="checkbox"
           value={clue.id}
           className={styles.customCheckboxInput}
-          //checked={isChecked}
+          checked={isChecked}
           onChange={() => handleCheckboxChange(clue.id)}
         />
       )}

@@ -69,7 +69,7 @@ export const mockUserCluesheet = {
   clues: [
     {
       id: "my-sick-and-poggers-uuid",
-      completions: 0,
+      completions: 1,
       description: "Eat a whole can of beans",
       points: "+5",
       rule: null,
