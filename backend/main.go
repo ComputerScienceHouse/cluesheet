@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"slices"
+	"strconv"
 	"time"
 
 	"csh/cluesheet/config"
@@ -331,11 +332,156 @@ func registerRoutes(rootContext context.Context, router *muxtrace.Router, conn *
 		rw.Write(data)
 	})
 
+	v1.Path("/cluesheet/{cluesheet_id}/clue/{clue_id}/progress/{ipa_uid}").Methods("GET").HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		// I don't think we actually care about the sheet ID
+		/*
+			cluesheet_id, err := uuid.Parse(vars["cluesheet_id"])
+			if err != nil {
+				http.Error(rw, fmt.Sprintf("failed to parse cluesheet uuid '%s': '%s'", vars["cluesheet_id"], err), 400)
+				return
+			}
+		*/
+
+		clue_id, err := uuid.Parse(vars["clue_id"])
+		if err != nil {
+			http.Error(rw, fmt.Sprintf("failed to parse clue uuid '%s': '%s'", vars["clue_id"]), 400)
+			return
+		}
+
+		ipa_uid := vars["ipa_uid"]
+		// todo validation
+
+		rows, err := conn.Query(r.Context(), `select * from user_progress where clue_id -$1 and ipa_uid =$2`, clue_id, ipa_uid)
+		if err != nil {
+			http.Error(rw, fmt.Sprintf("failed to query for user progress on clue '%s' for user '%s': %s", clue_id, ipa_uid, err), 500)
+			return
+		}
+
+		progress, err := pgx.CollectOneRow[UserProgress](rows, pgx.RowToStructByNameLax[UserProgress])
+		if err == pgx.ErrNoRows {
+			progress = UserProgress{
+				Ipa_uid:     ipa_uid,
+				Clue_id:     clue_id,
+				Completions: 0,
+			}
+		} else if err != nil {
+			http.Error(rw, fmt.Sprintf("failed to query for user progress on clue '%s' for user '%s': %s", clue_id, ipa_uid, err), 500)
+		}
+
+		data, err := json.Marshal(progress)
+		if err != nil {
+			http.Error(rw, "Failed to marshal data", 500)
+			fmt.Println(err.Error())
+			return
+		}
+
+		rw.Header().Set("Content-Type", "application/json")
+		rw.Write(data)
+	})
+
+	// Body as a plain number
+	v1.Path("/cluesheet/{cluesheet_id}/clue/{clue_id}/progress/{ipa_uid}").Methods("POST").HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		// I don't think we actually care about the sheet ID
+		/*
+			cluesheet_id, err := uuid.Parse(vars["cluesheet_id"])
+			if err != nil {
+				http.Error(rw, fmt.Sprintf("failed to parse cluesheet uuid '%s': '%s'", vars["cluesheet_id"], err), 400)
+				return
+			}
+		*/
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			http.Error(rw, fmt.Sprintf("failed to read request: %s", err.Error()), 400)
+			return
+		}
+
+		// do we care to be stricter in the parsing?
+		completions, err := strconv.Atoi(string(body))
+		if err != nil {
+			http.Error(rw, fmt.Sprintf("failed to parse request: %s", err.Error()), 400)
+			return
+		}
+
+		clue_id, err := uuid.Parse(vars["clue_id"])
+		if err != nil {
+			http.Error(rw, fmt.Sprintf("failed to parse clue uuid '%s': '%s'", vars["clue_id"]), 400)
+			return
+		}
+
+		ipa_uid := vars["ipa_uid"]
+		// todo validation
+
+		_, err = conn.Exec(ctx, `insert into user_progress (ipa_uid, clue_id, completions) values ($1, $2, $3) on conflict (ipa_uid, clue_id) do update set completions = $3`, ipa_uid, clue_id, completions)
+		if err != nil {
+			http.Error(rw, fmt.Sprintf("failed to update user progress on clue '%s' for user '%s' to value '%d': %s", clue_id, ipa_uid, completions, err), 500)
+			return
+		}
+
+		progress := UserProgress{
+			Ipa_uid:     ipa_uid,
+			Clue_id:     clue_id,
+			Completions: completions,
+		}
+
+		data, err := json.Marshal(progress)
+		if err != nil {
+			http.Error(rw, "Failed to marshal data", 500)
+			fmt.Println(err.Error())
+			return
+		}
+
+		rw.Header().Set("Content-Type", "application/json")
+		rw.Write(data)
+	})
+
 	v1.Path("/cluesheet/{cluesheet_id}/participation/{ipa_uid}").Methods("GET").HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		cluesheet_id, err := uuid.Parse(vars["cluesheet_id"])
 		if err != nil {
-			http.Error(rw, fmt.Sprintf("failed to parse uuid '%s': '%s'", vars["id"], err), 400)
+			http.Error(rw, fmt.Sprintf("failed to parse uuid '%s': '%s'", vars["cluesheet_id"], err), 400)
+			return
+		}
+
+		ipa_uid := vars["ipa_uid"]
+		// todo validation
+
+		rows, err := conn.Query(r.Context(), `select * from user_participation where cluesheet_id = $1 and ipa_uid = $2`, cluesheet_id, ipa_uid)
+		if err != nil {
+			http.Error(rw, fmt.Sprintf("failed to query for user participation on '%s' for user '%s': %s", cluesheet_id, ipa_uid, err), 500)
+			return
+		}
+
+		participation, err := pgx.CollectOneRow[UserParticipation](rows, pgx.RowToStructByNameLax[UserParticipation])
+		if err == pgx.ErrNoRows {
+			// if no stored result, there's no hiding
+			participation = UserParticipation{
+				Cluesheet_id: cluesheet_id,
+				Ipa_uid:      ipa_uid,
+				Hidden:       false,
+			}
+		} else if err != nil {
+			http.Error(rw, fmt.Sprintf("failed to query for user participation on '%s' for user '%s': %s", cluesheet_id, ipa_uid, err), 500)
+			return
+		}
+
+		data, err := json.Marshal(participation)
+		if err != nil {
+			http.Error(rw, "Failed to marshal data", 500)
+			fmt.Println(err.Error())
+			return
+		}
+
+		rw.Header().Set("Content-Type", "application/json")
+		rw.Write(data)
+	})
+
+	v1.Path("/cluesheet/{cluesheet_id}/participation/{ipa_uid}").Methods("GET").HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		cluesheet_id, err := uuid.Parse(vars["cluesheet_id"])
+		if err != nil {
+			http.Error(rw, fmt.Sprintf("failed to parse uuid '%s': '%s'", vars["cluesheet_id"], err), 400)
 			return
 		}
 
@@ -456,7 +602,7 @@ func main() {
 	registerRoutes(ctx, router, conn)
 
 	srv := &http.Server{
-		Addr:    ":8080",
+		Addr:    "0.0.0.0:8080",
 		Handler: router,
 	}
 
@@ -483,7 +629,7 @@ func main() {
 		shutdown <- struct{}{}
 	}()
 
-	log.FromContext(ctx).Info("starting http server")
+	log.FromContext(ctx).Info("starting http server", zap.String("addr", srv.Addr))
 	srv.ListenAndServe()
 	<-shutdown
 	log.FromContext(ctx).Info("exiting...")
