@@ -5,6 +5,7 @@ import PointCounter from "@/components/viewer/counter/PointCounter";
 import { Clue } from "@/lib/types";
 import { mockCluesheet } from "../../../../tests/lib/data";
 import { ClueList } from "@/components/viewer/ClueList/ClueList";
+import CluesheetForm from "@/components/form/CluesheetForm/CluesheetForm";
 
 export const metadata = {
   title: "View cluesheet",
@@ -16,28 +17,20 @@ export default async function CluesheetViewer({
 }: {
   params: Promise<{ cluesheet_id: string }>;
 }) {
+  //const cluesheet = mockCluesheet.clues;
+  //const cluesheet: Array<Clue> = [];
   //const { cluesheet_id } = await params;
-  //const cluesheet = await fetch(`${cluesheetBackendEndpoint}/api/v1/cluesheet/${cluesheet_id}`);
-  //console.log(`Got cluesheet object: ${await cluesheet.json()}`);
-
-  const cluesheet = mockCluesheet;
+  //const cluesheet = mockUserCluesheet;
 
   return (
     <>
       <main>
         <Container>
-          <div className={styles.header}>
-            <h1>{cluesheet.title}</h1>
-          </div>
-          <div className={styles.clueList}>
-            {cluesheet.clues.length > 0 && (
-              <ClueList ancestors={[]} clues={cluesheet.clues} />
-            )}
-            {/*cluesheet.clues.length > 0 &&
-              cluesheet.clues.map((clue: Clue, index) => (
-                <ClueGroup key={`${clue.id}`} clue={clue} parent={null} />
-              ))*/}
-          </div>
+          <CluesheetForm
+            cluesheet_id={"e"}
+            keycloak_uid={"chom"}
+            edit={false}
+          />
         </Container>
       </main>
     </>

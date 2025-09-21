@@ -6,29 +6,31 @@ interface LineItemProps {
   ancestors: Array<Clue>;
   clue: Clue;
   handleCheckboxChange: (clueId: string) => void;
+  edit: boolean,
 }
 
 export function LineItem({
   ancestors,
   clue,
   handleCheckboxChange,
+  edit,
 }: LineItemProps) {
   const ancestorTags: string[] = ancestors.flatMap((ancestor) => ancestor.tags);
 
-  const [isChecked, setIsChecked] = useState(false);
+  //const [isChecked, setIsChecked] = useState(false);
 
   const isStackable = clue.rule?.key === "stacks";
 
   return (
     <div className={styles.lineItem}>
-      {isStackable && (
+      {isStackable && edit && (
         <input
           type="number"
           value={clue.completions}
           onChange={(e) => handleCheckboxChange(clue.id, e.target.value)}
         />
       )}
-      {!isStackable && (
+      {!isStackable && edit && (
         <input
           type="checkbox"
           value={clue.id}

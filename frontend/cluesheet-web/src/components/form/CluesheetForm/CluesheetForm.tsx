@@ -13,11 +13,13 @@ import { useEffect, useState } from "react";
 interface CluesheetFormProps {
   cluesheet_id: string;
   keycloak_uid: string;
+  edit: boolean;
 }
 
 export default function CluesheetForm({
   cluesheet_id,
   keycloak_uid,
+  edit = true,
 }: CluesheetFormProps) {
   //const { cluesheet_id } = await params;
   //const cluesheet = await fetch(`${cluesheetBackendEndpoint}/api/v1/cluesheet/${cluesheet_id}/user/${keycloak_uid}`);
@@ -31,6 +33,11 @@ export default function CluesheetForm({
     clueId: string,
     completionValue: number = NaN,
   ) => {
+    // Don't want users trying to submit clues into the void
+    if (!edit) {
+      return;
+    }
+
     function maybeUpdateClue(clueId: string, clue: Clue) {
       if (clue.id === clueId) {
         console.log(`completions = ${clue.completions}`);
@@ -58,28 +65,6 @@ export default function CluesheetForm({
     }
 
     setClues(updateClues(clues));
-
-    /*
-    setClues((clues) => {
-      const updatedClues = clues.map((clue) => {
-        if (clue.id === clueId) {
-          console.log(`completions = ${clue.completions}`);
-          // Set the number of completions
-          if (!isNaN(completionValue)) {
-            return { ...clue, completions: completionValue }
-          }
-          // If the checkbox is not checked, then check it
-          if (clue.completions === 0) {
-            return { ...clue, completions: 1 };
-          }
-          // If the checkbox is checked, then un-check it
-          return { ...clue, completions: 0 };
-        }
-        return clue;
-      });
-      return updatedClues;
-    });
-    */
   };
 
   function convertToInteger(input: string): number {
@@ -111,17 +96,20 @@ export default function CluesheetForm({
     <>
       <div className={styles.header}>
         <h1>{cluesheet.title}</h1>
+        {/* TODO: Make this display the total _possible_ points when viewing */}
+        { edit && (
         <div className={styles.pointCounter}>
           <PointCounter points={score} />
           <h3>Points</h3>
         </div>
+          )}
       </div>
       <div className={styles.clueList}>
         {cluesheet.clues.length > 0 && (
           <ClueList
             ancestors={[]}
             clues={clues}
-            edit={true}
+            edit={edit}
             handleCheckboxChange={handleCheckboxChange}
           />
         )}

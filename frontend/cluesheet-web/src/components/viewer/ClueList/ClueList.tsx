@@ -29,6 +29,7 @@ export function ClueList({
             ancestors={ancestors}
             clue={clue}
             handleCheckboxChange={handleCheckboxChange}
+            edit={edit}
           />
           {clue.children.length > 0 && (
             <ClueList
