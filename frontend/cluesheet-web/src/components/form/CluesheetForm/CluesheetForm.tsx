@@ -31,8 +31,7 @@ export default function CluesheetForm({
     clueId: string,
     completionValue: number = NaN,
   ) => {
-    function maybeUpdateClue(clueId: string, clue: Clue) {
-      if (clue.id === clueId) {
+    function updateClue(clueId: string, clue: Clue) {
         console.log(`completions = ${clue.completions}`);
         // Set the number of completions
         if (!isNaN(completionValue)) {
@@ -44,20 +43,25 @@ export default function CluesheetForm({
         }
         // If the checkbox is checked, then un-check it
         return { ...clue, completions: 0 };
-      }
-      return clue;
     }
 
-    function updateClues(clues: Array<Clue>): Array<Clue> {
+    function updateClues(clues: Array<Clue>): {updatedClues: Array<Clue>, clueUpdated: boolean} {
+      let clueUpdated = false;
       const updatedClues = clues.map((clue: Clue) => {
-        clue.children = updateClues(clue.children);
-        clue = maybeUpdateClue(clueId, clue);
+        let updateCluesResult = updateClues(clue.children);
+        clue.children = updateCluesResult.updatedClues;
+        if (clue.id === clueId || updateCluesResult.clueUpdated) {
+          clue = updateClue(clueId, clue);
+          clueUpdated = true;
+        }
         return clue;
       });
-      return updatedClues;
+      return {updatedClues, clueUpdated};
     }
 
-    setClues(updateClues(clues));
+    const updateCluesResult = updateClues(clues);
+
+    setClues(updateCluesResult.updatedClues);
 
     /*
     setClues((clues) => {
