@@ -1,0 +1,14 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  padding: 2em;
+}
+
+.clueList {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  flex-grow: 1;
+
+  border-radius: 20px;
+}

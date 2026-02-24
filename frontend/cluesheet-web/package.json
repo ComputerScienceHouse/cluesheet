@@ -1,0 +1,33 @@
+{
+  "name": "cluesheet-web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@axa-fr/react-oidc": "^7.25.12",
+    "csh-material-bootstrap": "^4.6.2",
+    "msw": "^2.7.5",
+    "next": "15.3.1",
+    "playwright-msw": "^3.0.1",
+    "powerhooks": "^2.0.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-flip-numbers": "^3.0.9",
+    "react-router-dom": "^7.5.3",
+    "reactstrap": "^9.2.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "prettier": "3.6.2",
+    "sass": "^1.87.0",
+    "typescript": "^5"
+  }
+}

@@ -1,0 +1,16 @@
+@import url("https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap");
+.flipNumbers {
+  background-color: black;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 5px;
+}
+
+.number {
+  background-color: white;
+  margin: 1px;
+  border-radius: 5px;
+  font-family: "Courier Prime", monospace;
+  font-weight: 400;
+  font-style: normal;
+}
