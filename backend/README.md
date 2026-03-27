@@ -18,6 +18,14 @@ If compiled with `-buildvcs`, traces and logs will include a commit hash. You ca
 
 `gofmt -w -s .`
 
+### Testing
+
+#### All tests
+`go test ./... -v`
+
+#### Specific tests
+`go test ./... -v -run <pattern>` 
+
 ### Creating new DB migrations
 
 Create a new file with an incremented prefix number, a human readable string, and ending with `.up.sql`, with a corresponding `.down.sql` that has the same number prefix to revert your change. Apply these with golang-migrate
