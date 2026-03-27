@@ -482,7 +482,7 @@ func registerRoutes(rootContext context.Context, router *muxtrace.Router, conn *
 		vars := mux.Vars(r)
 		cluesheet_id, err := uuid.Parse(vars["cluesheet_id"])
 		if err != nil {
-			http.Error(rw, fmt.Sprintf("failed to parse uuid '%s': '%s'", vars["id"], err), 400)
+			http.Error(rw, fmt.Sprintf("failed to parse uuid '%s': '%s'", vars["cluesheet_id"], err), 400)
 			return
 		}
 
@@ -522,6 +522,44 @@ func registerRoutes(rootContext context.Context, router *muxtrace.Router, conn *
 			return
 		}
 
+		rw.Header().Set("Content-Type", "application/json")
+		rw.Write(data)
+	})
+
+	v1.Path("/cluesheet/{cluesheet_id}/user/{ipa_uid}").Methods("GET").HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		cluesheet_id, err := uuid.Parse(vars["cluesheet_id"])
+		if err != nil {
+			http.Error(rw, fmt.Sprintf("failed to parse cluesheet uuid '%s': '%s'", vars["cluesheet_id"], err), 400)
+			return
+		}
+
+		ipa_uid := vars["ipa_uid"]
+
+		rows, err := conn.Query(r.Context(), `select id, name, origin_id, created_by, created_at, edited_by, edited_at, visibility, owners, groups from cluesheet where id = $1`, cluesheet_id)
+		if err != nil {
+			http.Error(rw, fmt.Sprintf("failed getting cluesheet '%s': '%s'", cluesheet_id, err), 500)
+			return
+		}
+
+		cluesheet, err := pgx.CollectOneRow[Cluesheet](rows, pgx.RowToStructByNameLax[Cluesheet])
+		if err != nil {
+			http.Error(rw, fmt.Sprintf("failed getting cluesheet '%s': '%s'", cluesheet_id, err), 500)
+			return
+		}
+
+		clues, err := GetCluesForUser(r.Context(), conn, cluesheet.Id, ipa_uid)
+		if err != nil {
+			http.Error(rw, fmt.Sprintf("failed resolving clues for user '%s' on cluesheet '%s': '%s'", ipa_uid, cluesheet_id, err), 500)
+			return
+		}
+		cluesheet.Clues = &clues
+
+		data, err := json.Marshal(cluesheet)
+		if err != nil {
+			http.Error(rw, fmt.Sprintf("failed marshalling cluesheet '%s': '%s'", cluesheet_id, err), 500)
+			return
+		}
 		rw.Header().Set("Content-Type", "application/json")
 		rw.Write(data)
 	})

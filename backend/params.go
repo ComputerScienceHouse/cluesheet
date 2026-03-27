@@ -5,10 +5,10 @@ import (
 )
 
 type PostCluesheetParams struct {
-	Name       string
-	Origin     *uuid.UUID
-	Creator    string
-	Visibility *string
-	Owners     []string
-	Groups     []string
+	Name       string     `json:"name"`
+	Origin     *uuid.UUID `json:"origin"`
+	Creator    string     `json:"creator"`
+	Visibility *string    `json:"visibility"`
+	Owners     []string   `json:"owners"`
+	Groups     []string   `json:"groups"`
 }
