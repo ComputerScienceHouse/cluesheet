@@ -56,7 +56,7 @@ func GetConfig(_ context.Context) *viper.Viper {
 	}
 	err := config.ReadInConfig()
 	if err != nil {
-		panic(fmt.Sprintf(err.Error()))
+		panic(err.Error())
 	}
 
 	return config
