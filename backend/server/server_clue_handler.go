@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	dbclue "csh/cluesheet/db/clue"
 	"csh/cluesheet/model"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -73,60 +74,10 @@ func handlePostClue(rw http.ResponseWriter, r *http.Request) {
 		Children:    []*model.Clue{},
 	}
 
-	tx, err := conn.Begin(r.Context())
+	result, err := dbclue.CreateClue(r.Context(), conn, newClue, params.ParentClueId)
 	if err != nil {
-		writeError(rw, 500, "failed to store clue")
-		fmt.Println(err.Error())
+		writeError(rw, 500, fmt.Sprintf("failed to store clue: %s", err))
 		return
 	}
-	defer tx.Rollback(r.Context())
-
-	_, err = tx.Exec(r.Context(), `insert into clue(id, description, tags, origin_id, created_by, created_at, edited_by, edited_at) values ($1, $2, $3, $4, $5, $6, $7, $8)`,
-		newClue.Id,
-		newClue.Description,
-		newClue.Tags,
-		newClue.Origin_id,
-		newClue.Created_by,
-		newClue.Created_at,
-		newClue.Edited_by,
-		newClue.Edited_at,
-	)
-	if err != nil {
-		writeError(rw, 500, "failed to store clue")
-		fmt.Println(err.Error())
-		return
-	}
-
-	var cr *model.ClueRelation = nil
-
-	// fmt.Printf("%v\n%s\n", params, body) // printing was here presumably for debugging
-
-	if params.ParentClueId != nil {
-		cr = &model.ClueRelation{
-			Id:        uuid.New(),
-			Parent_id: *params.ParentClueId,
-			Child_id:  newClue.Id,
-		}
-
-		// TODO validate parent exists on same sheet
-
-		_, err = tx.Exec(r.Context(), `insert into clue_relation(id, parent_id, child_id) values ($1, $2, $3)`, cr.Id, cr.Parent_id, cr.Child_id)
-		if err != nil {
-			writeError(rw, 500, "failed to store clue parent")
-			fmt.Println(err.Error())
-			return
-		}
-	}
-
-	err = tx.Commit(r.Context())
-	if err != nil {
-		writeError(rw, 500, "failed to store clue with parent")
-		fmt.Println(err.Error())
-		return
-	}
-
-	writeJSON(rw, http.StatusOK, struct {
-		Clue         model.Clue
-		ClueRelation *model.ClueRelation `json:",omitempty,omitzero"`
-	}{Clue: newClue, ClueRelation: cr})
+	writeJSON(rw, http.StatusOK, result)
 }

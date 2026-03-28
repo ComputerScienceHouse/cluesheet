@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"strconv"
 
+	dbprogress "csh/cluesheet/db/progress"
 	"csh/cluesheet/model"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
-	"github.com/jackc/pgx/v5"
 )
 
 func handleGetProgress(rw http.ResponseWriter, r *http.Request) {
@@ -32,23 +32,11 @@ func handleGetProgress(rw http.ResponseWriter, r *http.Request) {
 	ipa_uid := vars["ipa_uid"]
 	// todo validation
 
-	rows, err := conn.Query(r.Context(), `select * from user_progress where clue_id = $1 and ipa_uid = $2`, clue_id, ipa_uid)
+	progress, err := dbprogress.GetProgress(r.Context(), conn, clue_id, ipa_uid)
 	if err != nil {
 		writeError(rw, 500, fmt.Sprintf("failed to query for user progress on clue '%s' for user '%s': %s", clue_id, ipa_uid, err))
 		return
 	}
-
-	progress, err := pgx.CollectOneRow[model.UserProgress](rows, pgx.RowToStructByNameLax[model.UserProgress])
-	if err == pgx.ErrNoRows {
-		progress = model.UserProgress{
-			Ipa_uid:     ipa_uid,
-			Clue_id:     clue_id,
-			Completions: 0,
-		}
-	} else if err != nil {
-		writeError(rw, 500, fmt.Sprintf("failed to query for user progress on clue '%s' for user '%s': %s", clue_id, ipa_uid, err))
-	}
-
 	writeJSON(rw, http.StatusOK, progress)
 }
 
@@ -85,17 +73,14 @@ func handlePostProgress(rw http.ResponseWriter, r *http.Request) {
 	ipa_uid := vars["ipa_uid"]
 	// todo validation
 
-	_, err = conn.Exec(r.Context(), `insert into user_progress (ipa_uid, clue_id, completions) values ($1, $2, $3) on conflict (ipa_uid, clue_id) do update set completions = $3`, ipa_uid, clue_id, completions)
-	if err != nil {
-		writeError(rw, 500, fmt.Sprintf("failed to update user progress on clue '%s' for user '%s' to value '%d': %s", clue_id, ipa_uid, completions, err))
-		return
-	}
-
 	progress := model.UserProgress{
 		Ipa_uid:     ipa_uid,
 		Clue_id:     clue_id,
 		Completions: completions,
 	}
-
+	if err := dbprogress.UpsertProgress(r.Context(), conn, progress); err != nil {
+		writeError(rw, 500, fmt.Sprintf("failed to update user progress on clue '%s' for user '%s' to value '%d': %s", clue_id, ipa_uid, completions, err))
+		return
+	}
 	writeJSON(rw, http.StatusOK, progress)
 }

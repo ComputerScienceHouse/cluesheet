@@ -8,35 +8,28 @@ import (
 	"slices"
 	"time"
 
+	dbclue "csh/cluesheet/db/clue"
+	dbcluesheet "csh/cluesheet/db/cluesheet"
 	"csh/cluesheet/model"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
-	"github.com/jackc/pgx/v5"
 )
 
 func handleListCluesheets(rw http.ResponseWriter, r *http.Request) {
-	rows, err := conn.Query(r.Context(), `select id, name, origin_id, created_by, created_at, edited_by, edited_at, visibility, owners, groups from cluesheet`)
+	sheets, err := dbcluesheet.ListCluesheets(r.Context(), conn)
 	if err != nil {
 		writeError(rw, 500, fmt.Sprintf("failed getting cluesheets: '%s'", err))
 		return
 	}
-
-	cluesheets, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[model.Cluesheet])
-	if err != nil {
-		writeError(rw, 500, fmt.Sprintf("failed getting cluesheet: '%s'", err))
-		return
-	}
-
-	for _, cluesheet := range cluesheets {
-		clues, err := model.GetClues(r.Context(), conn, cluesheet.Id)
+	for _, cluesheet := range sheets {
+		clues, err := dbclue.GetClues(r.Context(), conn, cluesheet.Id)
 		if err != nil {
 			writeError(rw, 500, fmt.Sprintf("failed resolving clues: '%s'", err))
 			return
 		}
 		cluesheet.Clues = &clues
 	}
-
-	writeJSON(rw, http.StatusOK, cluesheets)
+	writeJSON(rw, http.StatusOK, sheets)
 }
 
 func handleGetCluesheet(rw http.ResponseWriter, r *http.Request) {
@@ -47,25 +40,17 @@ func handleGetCluesheet(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rows, err := conn.Query(r.Context(), `select id, name, origin_id, created_by, created_at, edited_by, edited_at, visibility, owners, groups from cluesheet where id = $1`, id)
+	cluesheet, err := dbcluesheet.GetCluesheet(r.Context(), conn, id)
 	if err != nil {
 		writeError(rw, 500, fmt.Sprintf("failed getting cluesheet '%s': '%s'", vars["id"], err))
 		return
 	}
-
-	cluesheet, err := pgx.CollectOneRow[model.Cluesheet](rows, pgx.RowToStructByNameLax[model.Cluesheet])
-	if err != nil {
-		writeError(rw, 500, fmt.Sprintf("failed getting cluesheet '%s': '%s'", vars["id"], err))
-		return
-	}
-
-	clues, err := model.GetClues(r.Context(), conn, cluesheet.Id)
+	clues, err := dbclue.GetClues(r.Context(), conn, cluesheet.Id)
 	if err != nil {
 		writeError(rw, 500, fmt.Sprintf("failed resolving clues '%s': '%s'", vars["id"], err))
 		return
 	}
 	cluesheet.Clues = &clues
-
 	writeJSON(rw, http.StatusOK, cluesheet)
 }
 
@@ -132,11 +117,9 @@ func handlePostCluesheet(rw http.ResponseWriter, r *http.Request) {
 		Owners:     params.Owners,
 		Groups:     params.Groups,
 	}
-	_, err = conn.Exec(r.Context(), `insert into cluesheet (id, name, origin_id, created_by, created_at, edited_by, edited_at, visibility, owners, groups) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`, newSheet.Id, newSheet.Name, newSheet.Origin_id, newSheet.Created_by, newSheet.Created_at, newSheet.Edited_by, newSheet.Edited_at, newSheet.Visibility, newSheet.Owners, newSheet.Groups)
-	if err != nil {
+	if err := dbcluesheet.CreateCluesheet(r.Context(), conn, newSheet); err != nil {
 		writeError(rw, 500, fmt.Sprintf("failed to persist cluesheet: %s", err))
 		return
 	}
-
 	writeJSON(rw, http.StatusOK, newSheet)
 }
